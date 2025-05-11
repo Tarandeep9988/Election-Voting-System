@@ -63,25 +63,27 @@ public class TidemanElection {
     }
 
     private void sortPairs() {
-        pairs.sort((a, b) -> preferences[b.winner()][b.loser()] - preferences[a.winner()][a.loser()]);
+        pairs.sort((a, b) -> (preferences[a.winner][a.loser] - preferences[b.winner][b.loser]));
     }
 
     private void lockPairs() {
         for (Pair pair : pairs) {
-            if (!createsCycle(pair.winner(), pair.loser())) {
-                locked[pair.winner()][pair.loser()] = true;
+            if (!createsCycle(pair.winner, pair.loser)) {
+                locked[pair.winner][pair.loser] = true;
             }
         }
     }
 
     private boolean createsCycle(int winner, int loser) {
-        return checkCycle(loser, winner);
+        boolean[] visited = new boolean[candidates.size()];
+        return createsCycleRec(winner, loser, visited);
     }
 
-    private boolean checkCycle(int start, int target) {
-        if (start == target) return true;
+    private boolean createsCycleRec(int start, int current, boolean[] visited) {
+        if (visited[current]) return false;
+        visited[current] = true;
         for (int i = 0; i < candidates.size(); i++) {
-            if (locked[start][i] && checkCycle(i, target)) {
+            if (locked[current][i] && (i == start || createsCycleRec(start, i, visited))) {
                 return true;
             }
         }
@@ -90,14 +92,14 @@ public class TidemanElection {
 
     private void printWinner() {
         for (int i = 0; i < candidates.size(); i++) {
-            boolean isSource = true;
+            boolean isWinner = true;
             for (int j = 0; j < candidates.size(); j++) {
                 if (locked[j][i]) {
-                    isSource = false;
+                    isWinner = false;
                     break;
                 }
             }
-            if (isSource) {
+            if (isWinner) {
                 System.out.println("Winner: " + candidates.get(i));
                 return;
             }
