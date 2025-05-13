@@ -16,13 +16,14 @@ public class PluralityElection {
         int n = sc.nextInt();
         sc.nextLine(); // Consume newline
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; ) {
             System.out.print("Vote #" + (i + 1) + ": ");
             String name = sc.nextLine();
             if (votes.containsKey(name)) {
                 votes.put(name, votes.get(name) + 1);
+                i++;
             } else {
-                System.out.println("Invalid vote.");
+                System.out.println("Invalid vote! Again");
             }
         }
 

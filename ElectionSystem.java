@@ -24,7 +24,7 @@ public class ElectionSystem {
             case 3 -> new TidemanElection(candidates).run(sc);
             default -> System.out.println("Invalid choice.");
         }
-
+        
         sc.close();
     }
 }

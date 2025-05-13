@@ -1,11 +1,23 @@
 import java.util.*;
 
+class Candidate {
+    String name;
+    boolean eliminated;
+
+    Candidate(String name) {
+        this.name = name;
+        this.eliminated = false;
+    }
+}
+
 public class RunoffElection {
-    private final List<String> candidates;
-    private List<List<String>> preferences = new ArrayList<>();
+    private Map<String, Candidate> candidateMap = new HashMap<>();
+    private List<Queue<String>> ballots = new ArrayList<>();
 
     public RunoffElection(List<String> candidates) {
-        this.candidates = new ArrayList<>(candidates);
+        for (String name : candidates) {
+            candidateMap.put(name, new Candidate(name));
+        }
     }
 
     public void run(Scanner sc) {
@@ -14,54 +26,65 @@ public class RunoffElection {
         sc.nextLine();
 
         for (int i = 0; i < n; i++) {
-            List<String> ranks = new ArrayList<>();
+            Queue<String> ballot = new LinkedList<>();
             System.out.println("Voter #" + (i + 1));
-            for (int j = 0; j < candidates.size(); j++) {
+            for (int j = 0; j < candidateMap.size(); j++) {
                 System.out.print("Rank " + (j + 1) + ": ");
                 String name = sc.nextLine();
-                if (candidates.contains(name) && !ranks.contains(name)) {
-                    ranks.add(name);
+                if (candidateMap.containsKey(name) && !ballot.contains(name)) {
+                    ballot.offer(name);
                 } else {
                     System.out.println("Invalid or duplicate vote. Try again.");
                     j--;
                 }
             }
-            preferences.add(ranks);
+            ballots.add(ballot);
         }
 
         while (true) {
             Map<String, Integer> voteCount = new HashMap<>();
-            for (String c : candidates) voteCount.put(c, 0);
-
-            for (List<String> ballot : preferences) {
-                for (String name : ballot) {
-                    if (candidates.contains(name)) {
-                        voteCount.put(name, voteCount.get(name) + 1);
-                        break;
-                    }
+            for (Queue<String> ballot : ballots) {
+                while (!ballot.isEmpty() && candidateMap.get(ballot.peek()).eliminated) {
+                    ballot.poll(); // remove eliminated candidates from front
+                }
+                if (!ballot.isEmpty()) {
+                    String choice = ballot.peek();
+                    voteCount.put(choice, voteCount.getOrDefault(choice, 0) + 1);
                 }
             }
 
-            int majority = preferences.size() / 2 + 1;
-            for (String candidate : candidates) {
-                if (voteCount.get(candidate) >= majority) {
-                    System.out.println("Winner: " + candidate);
+            int majority = ballots.size() / 2 + 1;
+            for (Map.Entry<String, Integer> entry : voteCount.entrySet()) {
+                if (entry.getValue() >= majority) {
+                    System.out.println("Winner: " + entry.getKey());
                     return;
                 }
             }
 
-            int min = Collections.min(voteCount.values());
-            List<String> toRemove = new ArrayList<>();
-            for (String c : candidates) {
-                if (voteCount.get(c) == min) toRemove.add(c);
+            int minVotes = Collections.min(voteCount.values());
+            List<String> toEliminate = new ArrayList<>();
+            for (Candidate candidate : candidateMap.values()) {
+                if (!candidate.eliminated && voteCount.getOrDefault(candidate.name, 0) == minVotes) {
+                    toEliminate.add(candidate.name);
+                }
             }
 
-            if (toRemove.size() == candidates.size()) {
+            if (toEliminate.size() == countRemainingCandidates()) {
                 System.out.println("It's a tie!");
                 return;
             }
 
-            candidates.removeAll(toRemove);
+            for (String name : toEliminate) {
+                candidateMap.get(name).eliminated = true;
+            }
         }
+    }
+
+    private int countRemainingCandidates() {
+        int count = 0;
+        for (Candidate c : candidateMap.values()) {
+            if (!c.eliminated) count++;
+        }
+        return count;
     }
 }
