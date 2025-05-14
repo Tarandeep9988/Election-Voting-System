@@ -12,8 +12,7 @@ public class PluralityElection {
     }
 
     public void run(Scanner sc) {
-        System.out.print("Number of voters: ");
-        int n = sc.nextInt();
+        int n = Utility.getNumberOfVoters(sc);
         sc.nextLine(); // Consume newline
 
         for (int i = 0; i < n; ) {

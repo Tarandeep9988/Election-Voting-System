@@ -17,8 +17,7 @@ public class TidemanElection {
     record Pair(int winner, int loser) {}
 
     public void run(Scanner sc) {
-        System.out.print("Number of voters: ");
-        int voterCount = sc.nextInt();
+        int voterCount = Utility.getNumberOfVoters(sc);
         sc.nextLine();
 
         for (int i = 0; i < voterCount; i++) {
@@ -63,8 +62,21 @@ public class TidemanElection {
     }
 
     private void sortPairs() {
-        pairs.sort((a, b) -> (preferences[a.winner][a.loser] - preferences[b.winner][b.loser]));
+        for (int i = 0; i < pairs.size() - 1; i++) {
+            for (int j = 0; j < pairs.size() - i - 1; j++) {
+                int strength1 = preferences[pairs.get(j).winner][pairs.get(j).loser];
+                int strength2 = preferences[pairs.get(j + 1).winner][pairs.get(j + 1).loser];
+
+                if (strength1 < strength2) {
+                    // Swap pairs[j] and pairs[j + 1]
+                    Pair temp = pairs.get(j);
+                    pairs.set(j, pairs.get(j + 1));
+                    pairs.set(j + 1, temp);
+                }
+            }
+        }
     }
+
 
     private void lockPairs() {
         for (Pair pair : pairs) {
